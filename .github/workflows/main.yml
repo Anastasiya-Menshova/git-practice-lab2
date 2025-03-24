@@ -1,33 +1,23 @@
-name: CI Pipeline  # Название процесса CI
-
-on:  # Определяем, когда запускать CI
-  push:  # При каждом коммите в указанные ветки
-    branches:
-      - main
-      - development
-      - release
-  pull_request:  # При создании PR в main
-    branches:
-      - main
-
+name: Publish package to GitHub Packages
+on:
+  release:
+    types: [published]
 jobs:
   build:
-    runs-on: ubuntu-latest  # Используем виртуальную машину с Ubuntu
-
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3  # Загружаем код репозитория
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      # Setup .npmrc file to publish to GitHub Packages
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'  # Устанавливаем Node.js версии 20
-
-      - name: Install Dependencies
-        run: npm install  # Устанавливаем зависимости проекта
-
-      - name: Run Tests
-        run: npm test  # Запускаем тесты
-
-      - name: Build Project
-        run: npm run build  # Сборка проекта
+          node-version: '20.x'
+          registry-url: 'https://npm.pkg.github.com'
+          # Defaults to the user or organization that owns the workflow file
+          scope: '@octocat'
+      - run: npm ci
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
