@@ -1,0 +1,33 @@
+name: CI Pipeline  # Название процесса CI
+
+on:  # Определяем, когда запускать CI
+  push:  # При каждом коммите в указанные ветки
+    branches:
+      - main
+      - development
+      - release
+  pull_request:  # При создании PR в main
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Используем виртуальную машину с Ubuntu
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3  # Загружаем код репозитория
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'  # Устанавливаем Node.js версии 20
+
+      - name: Install Dependencies
+        run: npm install  # Устанавливаем зависимости проекта
+
+      - name: Run Tests
+        run: npm test  # Запускаем тесты
+
+      - name: Build Project
+        run: npm run build  # Сборка проекта
